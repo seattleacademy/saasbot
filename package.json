@@ -1,0 +1,28 @@
+{
+  "name": "saasbot",
+  "version": "0.0.1",
+  "description": "Telepresence robot developed by Gary Anderson's Software Development classes at Seattle Academy",
+  "main": "server.js",
+  "scripts": {
+    "test": "\"node server.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/seattleacademy/saasbot.git"
+  },
+  "author": "Gary Anderson and his students",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/seattleacademy/saasbot/issues"
+  },
+  "homepage": "https://github.com/seattleacademy/saasbot#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.16.4",
+    "lodash": "^4.17.11",
+    "node.extend": "^2.0.2",
+    "nodeimu": "^2.1.9",
+    "serialport": "^3.1.2",
+    "ws": "^7.0.0"
+  }
+}
