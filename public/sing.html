@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SAASBOT Sing</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+    <textarea id="song" rows="10" cols="50">[[640,100],[650,200]]</textarea>
+    <button id="sing">sing</button>
+    <div><button id="song1">song1</button></div>
+</div>
+
+
+
+    <script src='js/jquery-3.4.1.min.js'></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+    var latestDate = {};
+
+    function updateData(data) {
+        //console.log(JSON.stringify(data, null, 4));
+        latestData = data;
+    }
+
+    var host = window.document.location.host;
+    var ws = new WebSocket('ws://' + host);
+    //var ws = new WebSocket('ws://pi5:5001');
+    ws.onmessage = function(event) {
+        updateData(JSON.parse(event.data));
+    };
+
+    $("#sing").click(function() {
+        song = $("#song").val();
+        $.post("/sing", JSON.stringify({
+            song: song
+        }));
+    });
+
+    function song1() {
+        let tempo = 1;
+        let pitch = 1;
+        song = [];
+        song.push([30*pitch, 40*tempo]);
+        song.push([5*pitch, 4*tempo]);
+        song = JSON.stringify(song);
+        $.post("/sing", JSON.stringify({
+            song: song
+        }));
+    }
+
+    $("#song1").click(song1);
+    $("textarea").keydown(function(e) {
+        e.stopPropagation();
+    });
+
+    $("body").keydown(function(e) {
+        console.log(e.keyCode);
+        var key = e.key;
+        if(e.key=="k") song1();
+
+    });
+    </script>
+</body>
+
+</html>
