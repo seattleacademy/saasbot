@@ -90,7 +90,7 @@ app.all('/setRTS', function(req, res) {
     // console.log(JSON.stringify(sensors, null, 4));
 
 });
-port = 6001; //Change the first digit to match your robot
+port = robotData.port;
 var sensors = {};
 counter = 0;
 app.use(express.static(__dirname + '/public'));
