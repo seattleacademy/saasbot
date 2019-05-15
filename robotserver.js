@@ -12,7 +12,7 @@ robotData.counter = 0;
 robotData.timestamp = Date.now();
 var networkInterfaces = require('os').networkInterfaces();
 robotData.address = networkInterfaces.wlan0[0].address;
-robotData.port = robotData.address.split('.')[3] + '000';
+robotData.port = robotData.address.split('.')[3] + '001';
 robotData.mac = networkInterfaces.wlan0[0].mac;
 robotData.odometer = 0;
 
