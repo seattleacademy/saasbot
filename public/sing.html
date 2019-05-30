@@ -44,8 +44,11 @@
         let tempo = 1;
         let pitch = 1;
         song = [];
-        song.push([30*pitch, 40*tempo]);
-        song.push([5*pitch, 4*tempo]);
+        song.push([261*pitch, 100*tempo]);
+        song.push([329*pitch, 100*tempo]);
+	song.push([392*pitch, 100*tempo]);
+	song.push([523*pitch, 200*tempo]);
+
         song = JSON.stringify(song);
         $.post("/sing", JSON.stringify({
             song: song
