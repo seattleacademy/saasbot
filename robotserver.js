@@ -25,10 +25,8 @@ var robot = new irobot.Robot('/dev/ttyUSB0', { baudrate: 115200 }); //for create
 
 
 robot.on('sensordata', function(data) {
-    //console.log(data);
     robotData.data = JSON.parse(JSON.stringify(data));
     robotData.odometer += data.state.distance.millimeters;
-    //console.log(data.mode)
     if(data.state.mode.off) robotData.mode = 'off';
     if(data.state.mode.passive) robotData.mode = 'passive';
     if(data.state.mode.safe) robotData.mode = 'safe';
@@ -67,7 +65,7 @@ app.all('/drive', function(req, res) {
     console.log(JSON.parse(req.body));
     robot.drive(JSON.parse(req.body));
     res.send();
-     console.log(JSON.stringify(sensors, null, 4));
+    // console.log(JSON.stringify(sensors, null, 4));
 
 });
 
@@ -91,6 +89,27 @@ app.all('/setRTS', function(req, res) {
     robot.setRTS();
     res.send();
     // console.log(JSON.stringify(sensors, null, 4));
+
+});
+
+app.all('/full', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.fullMode();
+    res.send();
+
+});
+
+app.all('/safe', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.safeMode();
+    res.send();
+
+});
+
+app.all('/passive', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.passiveMode();
+    res.send();
 
 });
 port = robotData.port;
