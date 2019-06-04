@@ -18,37 +18,6 @@ robotData.port = robotData.address.split('.')[3] + '001';
 robotData.mac = networkInterfaces.wlan0[0].mac;
 robotData.odometer = 0;
 
-var irobot = require('./irobot');
-//Comment out one of the two lines below
-var robot = new irobot.Robot('/dev/ttyUSB0', { baudrate: 115200 }); //for create2
-//var robot = new irobot.Robot('/dev/ttyUSB0'); //for create1
-
-
-robot.on('sensordata', function(data) {
-    //console.log(data);
-    robotData.data = JSON.parse(JSON.stringify(data));
-    robotData.odometer += data.state.distance.millimeters;
-    //console.log(data.mode)
-    if(data.state.mode.off) robotData.mode = 'off';
-    if(data.state.mode.passive) robotData.mode = 'passive';
-    if(data.state.mode.safe) robotData.mode = 'safe';
-    if(data.state.mode.full) robotData.mode = 'full';
-    robotData.battery = data.battery.voltage.volts;
-    robotData.bumper_left = data.bumpers.left.activated;
-    robotData.bumper_right = data.bumpers.right.activated;
-    robotData.cliff_left = data.cliff_sensors.left.signal.raw;
-    robotData.cliff_front_left = data.cliff_sensors.front_left.signal.raw;
-    robotData.cliff_front_right = data.cliff_sensors.front_right.signal.raw;
-    robotData.cliff_right = data.cliff_sensors.right.signal.raw;
-    robotData.vL = data.state.requested_left_velocity;
-    robotData.vR = data.state.requested_right_velocity;
-    //console.log(robotData);
-    //Stop a bot that has not been reached for 5 seconds.
-    if ((Date.now() - robotData.timestamp) > 5000)
-        robot.drive({ left: '0', right: '0' });
-    //console.log(JSON.stringify(robotData.vR, null, 4));
-});
-
 function getRobotSensors() {
     robotData.counter++;
     robotData.timestamp = Date.now();
@@ -62,37 +31,22 @@ app.all('/robotsensors', function(req, res) {
 
 app.all('/drive', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    if (robotData.mode == "passive") robot.safeMode();
     console.log(req.body);
     console.log(JSON.parse(req.body));
-    robot.drive(JSON.parse(req.body));
     res.send();
-     console.log(JSON.stringify(sensors, null, 4));
-
 });
 
 app.all('/sing', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    if (robotData.mode == "passive") robot.safeMode();
     song = JSON.parse(req.body).song;
     song = song.replace(/\s/g, '');
     song = JSON.parse(song);
     console.log('song', song)
-    robot.sing(song);
     res.send();
     // console.log(JSON.stringify(sensors, null, 4));
 
 });
 
-
-app.all('/setRTS', function(req, res) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    //if (robotData.mode == "passive") robot.safeMode();
-    robot.setRTS();
-    res.send();
-    // console.log(JSON.stringify(sensors, null, 4));
-
-});
 port = robotData.port;
 var sensors = {};
 counter = 0;
@@ -109,15 +63,15 @@ function getData() {
         sensors = data;
         sensors.counter = counter++;
         getRobotSensors();
-        sensors.battery = robotData.battery;
-        sensors.odometer = robotData.odometer
-        sensors.vL = robotData.vL
-        sensors.vR = robotData.vR
-        sensors.cliff_left = robotData.cliff_left
-        sensors.cliff_front_left = robotData.cliff_front_left
-        sensors.cliff_front_right = robotData.cliff_front_right
-        sensors.cliff_right = robotData.cliff_right
-        sensors.mode = robotData.mode
+        sensors.battery = 0;
+        sensors.odometer = 0;
+        sensors.vL = 0;
+        sensors.vR = 0;
+        sensors.cliff_left = 0;
+        sensors.cliff_front_left = 0;
+        sensors.cliff_front_right = 0;
+        sensors.cliff_right = 0;
+        sensors.mode = 0;
 
     });
 }

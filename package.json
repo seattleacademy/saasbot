@@ -23,6 +23,7 @@
     "node.extend": "^2.0.2",
     "nodeimu": "^2.1.9",
     "serialport": "^3.1.2",
+    "serve-index": "^1.9.1",
     "ws": "^7.0.0"
   }
 }
