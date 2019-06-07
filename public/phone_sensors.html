@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SAASBOT</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <button id="turn">turn</button>
+        <button id="halt">halt</button>
+        <div class="row">
+            <div class="col">
+                <canvas id="canvasCompass" width="201" height="201"></canvas>
+            </div>
+            <div class="col">
+                <canvas id="canvasHorizon" width="201" height="201"></canvas>
+            </div>
+            <div class="col">
+                <canvas id="canvasAltimeter" width="201" height="201"></canvas>
+            </div>
+        </div>
+        <script src='js/jquery-3.4.1.min.js'></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src='js/gauges-min.js'></script>
+        <script>
+
+        var latestDate = {};
+
+        function updateGuages(data) {
+            console.log(JSON.stringify(data, null, 4));
+            latestData = data;
+            altimeter.setValue(data.locationAltitude*3.28);
+            horizon.setPitch(data.locationHeadingZ);
+            horizon.setRoll(data.locationHeadingX);
+            compass.setValue(data.locationTrueHeading);
+        }
+
+        $("#turn").click(function() {
+
+            $.post("/drive", JSON.stringify({
+                left: -20,
+                right: 20
+            }));
+        });
+        $("#halt").click(function() {
+            $.post("/drive", JSON.stringify({
+                left: 0,
+                right: 0
+            }));
+        });
+        var host = window.document.location.host;
+        var ws = new WebSocket('ws://' + host);
+        ws.onmessage = function(event) {
+            updateGuages(JSON.parse(event.data));
+        };
+        horizon = new steelseries.Horizon('canvasHorizon', {
+            size: 201
+        });
+        altimeter = new steelseries.Altimeter('canvasAltimeter', {
+            size: 201
+        });
+        compass = new steelseries.Compass('canvasCompass', {
+            size: 201,
+            rotateFace: true
+        });
+        </script>
+</body>
+
+</html>

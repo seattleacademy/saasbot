@@ -12,6 +12,7 @@ app.use(bodyParser.text({ type: "*/*" }));
 var robotData = {};
 robotData.counter = 0;
 robotData.timestamp = Date.now();
+robotData.phoneSensors = {};
 var networkInterfaces = require('os').networkInterfaces();
 robotData.address = networkInterfaces.wlan0[0].address;
 robotData.port = robotData.address.split('.')[3] + '001';
@@ -22,15 +23,15 @@ var irobot = require('./irobot');
 //Comment out one of the two lines below
 var robot = new irobot.Robot('/dev/ttyUSB0', { baudrate: 115200 }); //for create2
 //var robot = new irobot.Robot('/dev/ttyUSB0'); //for create1
-
+phoneSensors = {};
 
 robot.on('sensordata', function(data) {
     robotData.data = JSON.parse(JSON.stringify(data));
     robotData.odometer += data.state.distance.millimeters;
-    if(data.state.mode.off) robotData.mode = 'off';
-    if(data.state.mode.passive) robotData.mode = 'passive';
-    if(data.state.mode.safe) robotData.mode = 'safe';
-    if(data.state.mode.full) robotData.mode = 'full';
+    if (data.state.mode.off) robotData.mode = 'off';
+    if (data.state.mode.passive) robotData.mode = 'passive';
+    if (data.state.mode.safe) robotData.mode = 'safe';
+    if (data.state.mode.full) robotData.mode = 'full';
     robotData.battery = data.battery.voltage.volts;
     robotData.bumper_left = data.bumpers.left.activated;
     robotData.bumper_right = data.bumpers.right.activated;
@@ -44,12 +45,12 @@ robot.on('sensordata', function(data) {
     //Stop a bot that has not been reached for 5 seconds.
     if ((Date.now() - robotData.timestamp) > 5000)
         robot.drive({ left: '0', right: '0' });
-    //console.log(JSON.stringify(robotData.vR, null, 4));
 });
 
 function getRobotSensors() {
     robotData.counter++;
     robotData.timestamp = Date.now();
+    //console.log(robotData);
     return JSON.stringify(robotData);
 }
 
@@ -57,6 +58,7 @@ app.all('/robotsensors', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.send(getRobotSensors());
 });
+
 
 app.all('/drive', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -112,6 +114,13 @@ app.all('/passive', function(req, res) {
     res.send();
 
 });
+
+app.all('/phone', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    phoneSensors = JSON.parse(req.body);
+    res.send();
+});
+
 port = robotData.port;
 var sensors = {};
 counter = 0;
@@ -138,6 +147,11 @@ function getData() {
         sensors.cliff_right = robotData.cliff_right
         sensors.mode = robotData.mode
 
+        // console.log(phoneSensors);
+        for (key in phoneSensors) {
+            sensors[key] = phoneSensors[key]; // copies each property to the objCopy object
+        }
+        // console.log(JSON.stringify(robotData, null, 4));
     });
 }
 getData();

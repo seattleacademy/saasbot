@@ -17,6 +17,7 @@ robotData.address = networkInterfaces.wlan0[0].address;
 robotData.port = robotData.address.split('.')[3] + '001';
 robotData.mac = networkInterfaces.wlan0[0].mac;
 robotData.odometer = 0;
+phoneSensors = {};
 
 function getRobotSensors() {
     robotData.counter++;
@@ -47,6 +48,12 @@ app.all('/sing', function(req, res) {
 
 });
 
+app.all('/phone', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    phoneSensors = JSON.parse(req.body);
+    res.send();
+});
+
 port = robotData.port;
 var sensors = {};
 counter = 0;
@@ -72,6 +79,11 @@ function getData() {
         sensors.cliff_front_right = 0;
         sensors.cliff_right = 0;
         sensors.mode = 0;
+                 console.log(JSON.stringify(phoneSensors, null, 4));
+
+        for (key in phoneSensors) {
+            sensors[key] = phoneSensors[key]; // copies each property to the objCopy object
+        }
 
     });
 }
