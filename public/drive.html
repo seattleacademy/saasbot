@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SAASBOT</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+
+<body tabindex="0">
+    <div class="container">
+        <button id="halt">halt</button>
+        <button id="dock">dock</button>
+        lv: <input size="4" value="0" id="lv" /> rv <input size="4" value="0" id="rv">
+        <button id="go">go</button>
+        <button id="reset">reset</button>
+        <button id="passive">passive</button>
+        <button id="safe">safe</button>
+        <button id="full">full</button>
+        vL <span id="vL">0</span> vR <span id="vR">0</span>
+        <div class="row">
+            <div class="col">
+                <canvas id="canvasCompass" width="201" height="201"></canvas>
+            </div>
+        </div>
+        <ul>
+            <li>Heading <span id="heading"></span></li>
+            <li>Phone battery <span id="batteryLevel"></span></li>
+            <li>Phone state <span id="batteryState"></span></li>
+            <li>Bot Battery <span id="battery"></span></li>
+            <li>Bot Current <span id="amps"></span></li>
+            <li>Bot Recharging <span id="recharging"></span></li>
+            <li>Bot home_base <span id="home_base"></span></li>
+            <li>Bot mode <span id="mode"></span></li>
+        </ul>
+        <script src='js/jquery-3.4.1.min.js'></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src='js/gauges-min.js'></script>
+        <script>
+        var latestData = {};
+
+        function updateGuages(data) {
+            //console.log(JSON.stringify(data, null, 4));
+            latestData = data;
+            heading = (Number(data.locationTrueHeading) + 180);
+            if (heading > 360) heading -= 360;
+            heading = heading.toFixed();
+            compass.setValue(heading);
+            $("#heading").text(JSON.stringify(heading));
+            $("#batteryLevel").text(JSON.stringify(data.batteryLevel));
+            $("#batteryState").text(JSON.stringify(data.batteryState));
+            $("#battery").text(JSON.stringify(data.battery));
+            $("#amps").text(JSON.stringify(data.amps));
+            $("#recharging").text(JSON.stringify(data.recharging));
+            $("#home_base").text(JSON.stringify(data.home_base));
+
+            $("#vL").text(data.vL);
+            $("#vR").text(data.vR);
+            $("#mode").text(data.mode);
+        }
+        $("#reset").click(function() {
+            $.post("/reset");
+        });
+        $("#passive").click(function() {
+            $.post("/passive");
+        });
+        $("#safe").click(function() {
+            $.post("/safe");
+        });
+        $("#full").click(function() {
+            $.post("/full");
+        });
+
+        $("#halt").click(function() {
+            $.post("/halt");
+        });
+
+        $("#dock").click(function() {
+            $.post("/dock");
+        });
+        let lv = 0;
+        let rv = 0;
+        $("#go").click(function(e) {
+            lv = $('#lv').val();
+            rv = $('#rv').val();
+            $.post("/drive", JSON.stringify({
+                left: lv,
+                right: rv
+            }));
+        });
+
+        $("body").keydown(function(e) {
+            let delta = 28.5;
+            lv = Number($('#lv').val());
+            rv = Number($('#rv').val());
+            av = (lv + rv) / 2; //average velocity
+            if (e.key == "ArrowUp" || e.key == "w") {
+                $('#lv').val(Math.min(av + delta, 500));
+                $('#rv').val(Math.min(av + delta, 500));
+            }
+            if (e.key == "ArrowDown" || e.key == "s") {
+                $('#lv').val(Math.max(av - delta, -500));
+                $('#rv').val(Math.max(av - delta, -500));
+            }
+            if (e.key == "ArrowLeft" || e.key == "a") {
+                $('#lv').val(Math.max(lv - delta / 2, -500));
+                $('#rv').val(Math.min(rv + delta / 2, 500));
+            }
+            if (e.key == "ArrowRight" || e.key == "d") {
+                $('#lv').val(Math.min(lv + delta / 2, 500));
+                $('#rv').val(Math.max(rv - delta / 2, -500));
+            }
+            if (e.key == " ") {
+                $('#lv').val(0);
+                $('#rv').val(0);
+            }
+            $("#go").trigger('click');
+            return false;
+        })
+
+        $('body').focusout(function(e) {
+            var filterVal = 'blur(2px)';
+            $('body').css('filter', filterVal);
+            $('#lv').val(0);
+            $('#rv').val(0);
+            $("#go").trigger('click');
+            //console.log(latestData);
+            if(latestData.home_base) $.post("/passive");
+        });
+        $('body').focusin(function(e) {
+            var filterVal = 'blur(0px)';
+            $('body').css('filter', filterVal);
+        });
+        $('body').focus();
+
+        var host = window.document.location.host;
+        var ws = new WebSocket('ws://' + host);
+        ws.onmessage = function(event) {
+            updateGuages(JSON.parse(event.data));
+        };
+        compass = new steelseries.Compass('canvasCompass', {
+            size: 201,
+            rotateFace: true
+        });
+        </script>
+</body>
+
+</html>
