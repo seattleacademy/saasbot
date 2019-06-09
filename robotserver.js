@@ -26,6 +26,7 @@ var robot = new irobot.Robot('/dev/ttyUSB0', { baudrate: 115200 }); //for create
 phoneSensors = {};
 
 robot.on('sensordata', function(data) {
+    //console.log(JSON.stringify(data, null, 4));
     robotData.data = JSON.parse(JSON.stringify(data));
     robotData.odometer += data.state.distance.millimeters;
     if (data.state.mode.off) robotData.mode = 'off';
@@ -33,6 +34,9 @@ robot.on('sensordata', function(data) {
     if (data.state.mode.safe) robotData.mode = 'safe';
     if (data.state.mode.full) robotData.mode = 'full';
     robotData.battery = data.battery.voltage.volts;
+    robotData.amps = data.battery.current.amps;
+    robotData.recharging = data.battery.charging.recharging;
+    robotData.home_base = data.battery.charging.from.home_base;
     robotData.bumper_left = data.bumpers.left.activated;
     robotData.bumper_right = data.bumpers.right.activated;
     robotData.cliff_left = data.cliff_sensors.left.signal.raw;
@@ -80,8 +84,6 @@ app.all('/sing', function(req, res) {
     console.log('song', song)
     robot.sing(song);
     res.send();
-    // console.log(JSON.stringify(sensors, null, 4));
-
 });
 
 
@@ -115,6 +117,28 @@ app.all('/passive', function(req, res) {
 
 });
 
+
+app.all('/dock', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.dock();
+    res.send();
+
+});
+
+app.all('/reset', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.reset();
+    res.send();
+
+});
+
+app.all('/halt', function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    robot.halt();
+    res.send();
+
+});
+
 app.all('/phone', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     phoneSensors = JSON.parse(req.body);
@@ -138,6 +162,9 @@ function getData() {
         sensors.counter = counter++;
         getRobotSensors();
         sensors.battery = robotData.battery;
+        sensors.amps = robotData.amps;
+        sensors.recharging = robotData.recharging;
+        sensors.home_base = robotData.home_base;
         sensors.odometer = robotData.odometer
         sensors.vL = robotData.vL
         sensors.vR = robotData.vR

@@ -6,6 +6,7 @@ var Command = function (name, opcode, bytes) {
   this.bytes = _.isNumber(bytes) ? bytes : null;
 };
 
+module.exports.Reset = new Command('reset', 7, 0);
 module.exports.Start = new Command('start', 128, 0);
 module.exports.Baud = new Command('baud', 129, 1);
 module.exports.Safe = new Command('safe', 131, 0);

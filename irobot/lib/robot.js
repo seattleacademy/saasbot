@@ -479,6 +479,13 @@ Robot.prototype._storeAndPlaySong = function (notes) {
   this._sendCommand(commands.PlaySong, slot);
 };
 
+
+// put the robot into reset mode
+Robot.prototype.reset = function () {
+  this._sendCommand(commands.Reset); //Send Start command?
+  return this;
+};
+
 // put the robot into passive mode
 Robot.prototype.passiveMode = function () {
   this._sendCommand(commands.Start);
