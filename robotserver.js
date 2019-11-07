@@ -67,9 +67,13 @@ app.all('/robotsensors', function(req, res) {
 app.all('/drive', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     if (robotData.mode == "passive") robot.safeMode();
-    console.log(req.body);
-    console.log(JSON.parse(req.body));
-    robot.drive(JSON.parse(req.body));
+    console.log(req.query,req.body);
+    drive = req.query || JSON.parse(req.body);
+    if(!drive){
+        drive = JSON.parse(req.body)
+    }
+    console.log('drive',drive)
+    robot.drive(drive);
     res.send();
     // console.log(JSON.stringify(sensors, null, 4));
 
@@ -78,7 +82,8 @@ app.all('/drive', function(req, res) {
 app.all('/sing', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     if (robotData.mode == "passive") robot.safeMode();
-    song = JSON.parse(req.body).song;
+    song = req.query.song || JSON.parse(req.body).song;
+    console.log(req.query.song,song)
     song = song.replace(/\s/g, '');
     song = JSON.parse(song);
     console.log('song', song)
@@ -141,8 +146,14 @@ app.all('/halt', function(req, res) {
 
 app.all('/phone', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    phoneSensors = JSON.parse(req.body);
-    res.send();
+    console.log(req.query, req.params)
+    phoneSensors = req.query || JSON.parse(req.body);
+
+    for (key in phoneSensors) {
+        sensors[key] = phoneSensors[key]; // copies each property to the objCopy object
+    }
+    res.send(sensors);
+    //res.send();
 });
 
 port = robotData.port;
@@ -178,7 +189,7 @@ function getData() {
         for (key in phoneSensors) {
             sensors[key] = phoneSensors[key]; // copies each property to the objCopy object
         }
-        // console.log(JSON.stringify(robotData, null, 4));
+        // console.log(JSON.stringify(sensors, null, 4));
     });
 }
 getData();
