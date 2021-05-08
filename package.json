@@ -19,7 +19,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.16.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "node.extend": "^2.0.2",
     "nodeimu": "^2.1.9",
     "serialport": "^3.1.2",
