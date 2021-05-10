@@ -1,0 +1,297 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+
+  <meta charset="UTF-8">
+  
+<link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+<link rel="mask-icon" type="" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+
+
+  <title>CodePen - 2129-3</title>
+  
+  
+  
+  
+<style>
+#myCanvas{
+  background:#cccccc;
+}
+
+.hide{
+  display:none;
+}
+</style>
+
+  
+  
+  
+  
+
+</head>
+
+<body translate="no" >
+  <audio controls id="smack">
+  <source src="https://math.seattleacademy.org/garyanderson/snd/smack.wav">
+</audio>
+
+<audio controls id="ugh">
+  <source src="https://math.seattleacademy.org/garyanderson/snd/ugh.wav">
+</audio>
+
+<div>
+  Bot Count: <span id="botCount">0</span> Deaths: <span id="deaths">0</span> time: <span id="theTime">0</span>
+  <button id="resetBots">Reset Bots</button>
+</div>
+<canvas id="myCanvas" width="600" height="300"></canvas>
+
+<img id="pacman" class = "hide" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Pac_Man.svg/1200px-Pac_Man.svg.png"/>
+
+<img id="redghost" class= "hide" src="https://i.pinimg.com/originals/90/d2/e3/90d2e3ff2856032d36fcc7dc49334191.png"/>
+
+<img id="maze" class="hide" src="https://seattleacademy.github.io/2127-3/img/maze.png"/>
+  
+  
+      <script id="rendered-js" >
+console.clear();
+
+const ughsnd = document.getElementById("ugh");
+const smacksnd = document.getElementById("smack");
+
+let timer = 0;
+const c = document.getElementById("myCanvas");
+const ctx = c.getContext("2d");
+let bots = [];
+function makeBot() {
+  const bot = {};
+  bot.r = 10 + Math.random() * 5;
+  bot.x = (c.width - 2 * bot.r) * Math.random() + bot.r;
+  bot.y = (c.height - 2 * bot.r) * Math.random() + bot.r;
+
+  //bot.theta= -Math.PI/4;
+  bot.dx = Math.random() * 2 - 1;
+  bot.dy = Math.random() * 2 - 1;
+  bot.theta = Math.atan2(bot.dy, bot.dx);
+  bot.v = (bot.dx + bot.dy) / 2;
+  bot.vl = 1;
+  bot.vr = 1;
+  return bot;
+}
+function doResetBots() {
+  console.log("resetBots");
+  bots = [];
+  let bot0 = {};
+  bot0.x = 20;
+  bot0.y = 70;
+  bot0.r = 15;
+  bot0.dx = 0
+  bot0.dy = 0;
+  bot0.theta = 0;
+  bot0.omega = 0;
+  bots.push(bot0);
+  
+  for (let i = 0; i < 0; i++) {
+    bot = makeBot();
+    bots.push(bot);
+  }
+  bots[0].imgid = "pacman";
+  // bots[1].imgid = "redghost";
+}
+doResetBots();
+function drawBot(bot) {
+  ctx.beginPath();
+  ctx.arc(bot.x, bot.y, bot.r, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.moveTo(bot.x, bot.y);
+  x = bot.x + bot.r * Math.cos(bot.theta);
+  y = bot.y - bot.r * Math.sin(bot.theta);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  //if (bot.r == bots[0].r) {
+  if (bot.imgid) {
+    ctx.fillStyle = "rgba(255,0,0,.5)";
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(bot.x, bot.y);
+    ctx.rotate(-bot.theta);
+    ctx.translate(-bot.x, -bot.y);
+    var img = document.getElementById(bot.imgid);
+    ctx.drawImage(img, bot.x - bot.r, bot.y - bot.r, 2 * bot.r, 2 * bot.r);
+
+    ctx.restore();
+  }
+}
+
+function moveBot(bot) {
+  timer = timer + 1;
+  let theTime = document.getElementById("theTime");
+  theTime.innerHTML = timer;
+
+  bot.x = bot.x + bot.dx;
+  bot.y = bot.y - bot.dy;
+  if (bot.y - bot.r < 0) {
+    bot.dy = -bot.dy;
+    // ughsnd.play();
+  }
+  if (bot.x + bot.r >= c.width) {
+    bot.dx = -bot.dx;
+    // ughsnd.play();
+  }
+  if (bot.y + bot.r >= c.height) {
+    bot.dy = -bot.dy;
+    // ughsnd.play();
+  }
+  if (bot.x - bot.r <= 0) {
+    bot.dx = -bot.dx;
+    // ughsnd.play();
+  }
+  //bot.theta = Math.atan2(bot.dy, bot.dx);
+  bot.theta = bot.theta + bot.omega;
+
+  drawBot(bot);
+
+  let botCount = document.getElementById("botCount");
+  botCount.innerHTML = bots.length;
+}
+function moveBots() {
+  checkCollide();
+  ctx.clearRect(0, 0, c.width, c.height);
+  const maze = document.getElementById("maze");
+  ctx.drawImage(maze, 0, 0,c.width,c.height);
+  for (let i = 0; i < bots.length; i++) {
+    moveBot(bots[i]);
+  }
+}
+function checkCollide() {
+  for (i = 0; i < bots.length; i++) {
+    for (j = 0; j < bots.length; j++) {
+      if (i == j) continue;
+      d = Math.sqrt(
+        (bots[i].x - bots[j].x) ** 2 + (bots[i].y - bots[j].y) ** 2
+      );
+      if (d <= bots[i].r + bots[j].r) {
+        // smacksnd.play();
+        if (bots[i].r < bots[j].r) {
+          bots[j].r = Math.sqrt(bots[i].r ** 2 + bots[j].r ** 2);
+          bots[i].r = 0;
+        }
+      }
+    }
+  }
+  if (bots[0].r == 0) {
+    let deathSpan = document.getElementById("deaths");
+    deaths = deathSpan.innerHTML * 1 + 1;
+    deaths.innerHTML = deaths;
+    doResetBots();
+  }
+  for (i = bots.length - 1; i > 0; i--) {
+    //console.log(i,bots[i].r);
+    if (bots[i].r == 0) bots.splice(i, 1);
+  }
+}
+let stepd = 100;
+setInterval(moveBots, stepd);
+
+function dokeydown(e) {
+  console.log(e.key);
+  let stepSize = 2;
+  if (e.key == "ArrowUp") {
+    bots[0].dy = bots[0].dy + stepSize;
+  }
+
+  if (e.key == "ArrowRight") {
+    bots[0].dx = bots[0].dx + stepSize;
+  }
+
+  if (e.key == "ArrowLeft") {
+    bots[0].dx = bots[0].dx - stepSize;
+  }
+
+  if (e.key == "ArrowDown") {
+    bots[0].dy = bots[0].dy - stepSize;
+  }
+  //Stop the Bot
+  if (e.key == " ") {
+    bots[0].dy = 0;
+    bots[0].dx = 0;
+    e.stopPropagation();
+  }
+}
+
+document.addEventListener("keydown", dokeydown);
+
+document.getElementById("resetBots").addEventListener("click", doResetBots);
+
+function stopBot(){
+  let bot = bots[0];
+  bot.dx = 0;
+  bot.dy = 0;
+  bot.omega = 0;
+  console.dir(bots);
+}
+
+function botRight(){
+  let bot = bots[0];
+  bot.dx = 2;
+  bot.dy = 0;
+}
+
+function botLeft(){
+  let bot = bots[0];
+  bot.dx = -2;
+  bot.dy = 0;
+
+}
+
+function botUp(){
+  let bot = bots[0];
+  bot.dx = 0;
+  bot.dy = 2;
+}
+
+function botDown(){
+  let bot = bots[0];
+  bot.dx = 0;
+  bot.dy = -2;
+}
+
+function runMaze(){
+  doResetBots();
+  setTimeout(botRight,0);
+  setTimeout(botUp,2000);
+  setTimeout(botRight,4000);
+  setTimeout(botDown,12000);
+  setTimeout(botRight,17000);
+  setTimeout(botUp,25000);
+  setTimeout(botRight,30000);
+  setTimeout(botDown,34000);
+  setTimeout(botRight,36500);
+  setTimeout(botDown,41000);
+  setTimeout(botLeft,43500);
+  setTimeout(botDown,47000);
+  setTimeout(botRight,49500);
+  setTimeout(botDown,53000);
+  setTimeout(botRight,57500);
+  setTimeout(stopBot,59000);
+}
+
+runMaze();
+
+//https://owenmcgann.github.io/2126-5-Owen-M/snd/ugh.wav// Need to make this another sound when bots colide
+    </script>
+
+  
+
+</body>
+
+</html>
+ 
