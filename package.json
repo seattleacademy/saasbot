@@ -23,6 +23,6 @@
     "node.extend": "^2.0.2",
     "serialport": "^9.0.7",
     "serve-index": "^1.9.1",
-    "ws": "^7.0.0"
+    "ws": "^7.4.6"
   }
 }
